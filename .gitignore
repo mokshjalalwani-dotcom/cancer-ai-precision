@@ -6,6 +6,7 @@ __pycache__/
 
 # Large data files (tracked by DVC or not needed in repo)
 *.tsv
+!target_ready_dataset.tsv
 *.parquet
 *.json
 
