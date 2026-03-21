@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
@@ -6,6 +7,15 @@ import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 
 app = FastAPI(title="Breast Cancer Prediction API")
+
+# Allow CORS so the React frontend can talk to this API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allow all origins for now (localhost, vercel)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # -----------------------------
 # Load artifacts
