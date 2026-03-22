@@ -10,8 +10,9 @@ services:
   # 2. Premium Frontend Site (Vite Static)
   - type: static_site
     name: cancer-ai-frontend
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
     envVars:
       - key: NODE_VERSION
         value: 20
