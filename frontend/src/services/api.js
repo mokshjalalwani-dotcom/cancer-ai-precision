@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 // Use the environment variable if available (e.g., set in Vercel/Netlify), otherwise default to our live Render API
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+if (API_BASE_URL && !API_BASE_URL.startsWith('http')) {
+  API_BASE_URL = `https://${API_BASE_URL}`;
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
