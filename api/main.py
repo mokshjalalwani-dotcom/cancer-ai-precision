@@ -503,31 +503,31 @@ async def extract_report(file: UploadFile = File(...)):
     }
 
     # Case-insensitive search
-    # Tumor Stage: Stage I, II, III, IV
-    stage_match = re.search(r"Stage\s+(I{1,3}|IV)", text, re.IGNORECASE)
+    # Tumor Stage: Stage I, II, III, IV (Allow optional colon/dash)
+    stage_match = re.search(r"Stage[:-\s]+(I{1,3}|IV)", text, re.IGNORECASE)
     if stage_match:
         data["tumorStage"] = stage_match.group(1).upper()
 
-    # Tumor Grade: G1, G2, G3
-    grade_match = re.search(r"Grade\s+(G[1-3])", text, re.IGNORECASE)
+    # Tumor Grade: Grade G1, G2, G3 (Allow optional colon/dash)
+    grade_match = re.search(r"Grade[:-\s]+(G[1-3])", text, re.IGNORECASE)
     if not grade_match:
         grade_match = re.search(r"\b(G[1-3])\b", text, re.IGNORECASE)
     if grade_match:
         data["tumorGrade"] = grade_match.group(1).upper()
 
-    # Metastasis: Yes/No
-    meta_match = re.search(r"Metastasis:\s*(Yes|No)", text, re.IGNORECASE)
+    # Metastasis: Yes/No (Allow optional colon/dash)
+    meta_match = re.search(r"Metastasis[:-\s]+(Yes|No)", text, re.IGNORECASE)
     if meta_match:
         data["metastasis"] = meta_match.group(1).capitalize()
 
     # Genes: Specific Gene A, B, C (backward compatibility)
     for g in ["A", "B", "C"]:
-        gene_match = re.search(rf"Gene\s+{g}[:\s]*([\d\.]+)", text, re.IGNORECASE)
+        gene_match = re.search(rf"Gene\s+{g}[:-\s]*([\d\.]+)", text, re.IGNORECASE)
         if gene_match:
             data[f"gene{g}"] = float(gene_match.group(1))
 
-    # Bulk Genes: ENSG IDs (e.g., ENSG00000276168.1: 12.3)
-    ensg_matches = re.finditer(r"(ENSG\d+\.\d+)[:\s]+([\d\.]+)", text)
+    # Bulk Genes: ENSG IDs (e.g., ENSG00000276168.1: 12.3 or ENSG00000276168: 12.3)
+    ensg_matches = re.finditer(r"(ENSG\d+(?:\.\d+)?)[:-\s]+([\d\.]+)", text)
     extracted_genes = {}
     for match in ensg_matches:
         ensg_id = match.group(1)
