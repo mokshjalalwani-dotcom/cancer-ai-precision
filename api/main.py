@@ -524,12 +524,12 @@ async def extract_report(file: UploadFile = File(...)):
 
     # Genes: Specific Gene A, B, C (backward compatibility)
     for g in ["A", "B", "C"]:
-        gene_match = re.search(rf"Gene\s+{g}[:-\s]*([\d\.]+)", text, re.IGNORECASE)
+        gene_match = re.search(rf"Gene\s+{g}[:\-\s]*([\d\.]+)", text, re.IGNORECASE)
         if gene_match:
             data[f"gene{g}"] = float(gene_match.group(1))
 
     # Bulk Genes: ENSG IDs (e.g., ENSG00000276168.1: 12.3 or ENSG00000276168: 12.3)
-    ensg_matches = re.finditer(r"(ENSG\d+(?:\.\d+)?)[:-\s]+([\d\.]+)", text)
+    ensg_matches = re.finditer(r"(ENSG\d+(?:\.\d+)?)[:\-\s]+([\d\.]+)", text)
     extracted_genes = {}
     for match in ensg_matches:
         ensg_id = match.group(1)
