@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import NearestNeighbors
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import RobustScaler
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
 import joblib
 
 INPUT_FILE = "target_ready_dataset.tsv"
@@ -20,37 +22,57 @@ gene_cols = [c for c in df.columns if c.startswith("ENSG")]
 
 print("Total genes:", len(gene_cols))
 
-X = df[gene_cols].apply(pd.to_numeric, errors="coerce").fillna(0)
+# Keep raw X for pipeline; don't fillna(0) globally
+X = df[gene_cols].apply(pd.to_numeric, errors="coerce")
 
 print("Feature matrix:", X.shape)
+
+# Define robust preprocessing steps
+# 1. Impute missing values with median (better for biological data than mean/0)
+# 2. Scale using RobustScaler (resilient to extreme gene expression outliers)
+preprocessor = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', RobustScaler())
+])
+
+# Define grid for RF optimization to maintain/improve accuracy
+param_grid = {
+    'classifier__n_estimators': [100, 200],
+    'classifier__max_depth': [10, 20, None],
+    'classifier__min_samples_leaf': [1, 2, 4]
+}
 
 # ==========================
 # SURVIVAL MODEL
 # ==========================
 
 if "survival_label" in df.columns:
-
-    y = df["survival_label"].fillna(0)
+    
+    # Fill missing survival labels with 0 to maintain binary classification
+    y_surv = df["survival_label"].fillna(0)
+    X_surv = X.copy()
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+        X_surv, y_surv, test_size=0.2, random_state=42, stratify=y_surv
     )
 
-    print("Training Survival Model...")
+    print("\nTraining Survival Model (with CV Tuning)...")
+    
+    surv_pipeline = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', RandomForestClassifier(n_jobs=-1, random_state=42))
+    ])
 
-    survival_model = RandomForestClassifier(
-        n_estimators=100,
-        max_depth=10,
-        n_jobs=-1
-    )
+    surv_search = GridSearchCV(surv_pipeline, param_grid, cv=3, scoring='accuracy', n_jobs=-1)
+    surv_search.fit(X_train, y_train)
 
-    survival_model.fit(X_train, y_train)
+    best_surv_model = surv_search.best_estimator_
+    acc = best_surv_model.score(X_test, y_test)
 
-    acc = survival_model.score(X_test, y_test)
-
+    print("Survival Model Best Params:", surv_search.best_params_)
     print("Survival Model Accuracy:", acc)
 
-    joblib.dump(survival_model, "survival_model.pkl")
+    joblib.dump(best_surv_model, "survival_model.pkl")
 
 # ==========================
 # RECURRENCE MODEL
@@ -58,36 +80,41 @@ if "survival_label" in df.columns:
 
 if "recurrence_label" in df.columns:
 
-    y = df["recurrence_label"].fillna(0)
+    # Fill missing recurrence labels with 0 to maintain binary classification
+    y_rec = df["recurrence_label"].fillna(0)
+    X_rec = X.copy()
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+        X_rec, y_rec, test_size=0.2, random_state=42, stratify=y_rec
     )
 
-    print("Training Recurrence Model...")
+    print("\nTraining Recurrence Model (with CV Tuning)...")
 
-    recurrence_model = RandomForestClassifier(
-        n_estimators=100,
-        max_depth=10,
-        n_jobs=-1
-    )
+    rec_pipeline = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', RandomForestClassifier(n_jobs=-1, random_state=42))
+    ])
 
-    recurrence_model.fit(X_train, y_train)
+    rec_search = GridSearchCV(rec_pipeline, param_grid, cv=3, scoring='accuracy', n_jobs=-1)
+    rec_search.fit(X_train, y_train)
 
-    acc = recurrence_model.score(X_test, y_test)
+    best_rec_model = rec_search.best_estimator_
+    acc = best_rec_model.score(X_test, y_test)
 
+    print("Recurrence Model Best Params:", rec_search.best_params_)
     print("Recurrence Model Accuracy:", acc)
 
-    joblib.dump(recurrence_model, "recurrence_model.pkl")
+    joblib.dump(best_rec_model, "recurrence_model.pkl")
 
 # ==========================
 # PATIENT SIMILARITY ENGINE
 # ==========================
 
-print("Building Similarity Engine...")
+print("\nBuilding Similarity Engine...")
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# Refit preprocessor on the entire dataset for similarity search
+preprocessor.fit(X)
+X_scaled = preprocessor.transform(X)
 
 knn = NearestNeighbors(
     n_neighbors=5,
@@ -97,13 +124,14 @@ knn = NearestNeighbors(
 knn.fit(X_scaled)
 
 joblib.dump(knn, "patient_similarity_model.pkl")
-joblib.dump(scaler, "scaler.pkl")
+# Instead of just the scaler, we dump the whole preprocessor pipeline
+joblib.dump(preprocessor, "scaler.pkl") 
 
 # save patient ids for lookup
 df[[id_col]].to_csv("patient_ids.tsv", sep="\t", index=False)
 
-print("Models saved:")
-print("survival_model.pkl")
-print("recurrence_model.pkl")
-print("patient_similarity_model.pkl")
-print("scaler.pkl")
+print("\nModels saved successfully.")
+print("- survival_model.pkl (Pipeline: Imputer + Scaler + RF)")
+print("- recurrence_model.pkl (Pipeline: Imputer + Scaler + RF)")
+print("- patient_similarity_model.pkl")
+print("- scaler.pkl (Now contains the full preprocessing Pipeline)")
