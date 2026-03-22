@@ -503,20 +503,20 @@ async def extract_report(file: UploadFile = File(...)):
     }
 
     # Case-insensitive search
-    # Tumor Stage: Stage I, II, III, IV (Allow optional colon/dash)
-    stage_match = re.search(r"Stage[:-\s]+(I{1,3}|IV)", text, re.IGNORECASE)
+    # Tumor Stage: Stage I, II, III, IV or 1, 2, 3, 4 (Allow optional colon/dash)
+    stage_match = re.search(r"Stage[:\-\s]+(I{1,3}|IV|\d+)", text, re.IGNORECASE)
     if stage_match:
         data["tumorStage"] = stage_match.group(1).upper()
 
     # Tumor Grade: Grade G1, G2, G3 (Allow optional colon/dash)
-    grade_match = re.search(r"Grade[:-\s]+(G[1-3])", text, re.IGNORECASE)
+    grade_match = re.search(r"Grade[:\-\s]+(G[1-3])", text, re.IGNORECASE)
     if not grade_match:
         grade_match = re.search(r"\b(G[1-3])\b", text, re.IGNORECASE)
     if grade_match:
         data["tumorGrade"] = grade_match.group(1).upper()
 
     # Metastasis: Yes/No (Allow optional colon/dash)
-    meta_match = re.search(r"Metastasis[:-\s]+(Yes|No)", text, re.IGNORECASE)
+    meta_match = re.search(r"Metastasis[:\-\s]+(Yes|No)", text, re.IGNORECASE)
     if meta_match:
         data["metastasis"] = meta_match.group(1).capitalize()
 
