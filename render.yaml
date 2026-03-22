@@ -8,12 +8,13 @@ services:
     autoDeploy: true
 
   # 2. Premium Frontend Site (Vite Static)
-  - type: web
+  - type: static_site
     name: cancer-ai-frontend
-    env: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
+      - key: NODE_VERSION
+        value: 20
       - key: VITE_API_BASE_URL
         fromService:
           name: cancer-ai-api
