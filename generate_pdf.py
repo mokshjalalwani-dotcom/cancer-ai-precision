@@ -10,28 +10,19 @@ def generate_pdf(filename):
     c.setFont("Helvetica-Bold", 18)
     c.drawCentredString(width/2, height - 50, "CANCER PROGNOSIS SYSTEM - SAMPLE MEDICAL REPORT")
 
-    # Patient info
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, height - 100, "Patient Information:")
-    c.setFont("Helvetica", 10)
-    c.drawString(70, height - 120, "Full Name: Johnathan Smith")
-    c.drawString(70, height - 135, "Hospital ID: HOSP-99231")
-    c.drawString(70, height - 150, "Age: 58")
-    c.drawString(70, height - 165, "Gender: Male")
-
     # Clinical findings
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, height - 200, "Clinical Findings:")
+    c.drawString(50, height - 100, "Clinical Findings:")
     c.setFont("Helvetica", 10)
-    c.drawString(70, height - 220, "Tumor Stage: Stage III")
-    c.drawString(70, height - 235, "Tumor Grade: G2")
-    c.drawString(70, height - 250, "Metastasis: No")
+    c.drawString(70, height - 120, "Tumor Stage: Stage III")
+    c.drawString(70, height - 135, "Tumor Grade: G2")
+    c.drawString(70, height - 150, "Metastasis: No")
 
     # Genomic Profile
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, height - 300, "Genomic Profile:")
+    c.drawString(50, height - 200, "Genomic Profile:")
     c.setFont("Helvetica", 10)
-    c.drawString(70, height - 320, "The following genetic markers were identified and quantified:")
+    c.drawString(70, height - 220, "The following genetic markers were identified and quantified:")
 
     genes = [
         ("ENSG00000276168.1", "14.522"),
@@ -49,7 +40,7 @@ def generate_pdf(filename):
         ("Gene C", "0.92")
     ]
 
-    y = height - 340
+    y = height - 240
     for gene, value in genes:
         c.drawString(70, y, f"{gene}: {value}")
         y -= 15
