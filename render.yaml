@@ -18,3 +18,7 @@ services:
         value: 20
       - key: VITE_API_BASE_URL
         value: https://cancer-ai-api-sg4l.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
