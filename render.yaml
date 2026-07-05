@@ -8,8 +8,9 @@ services:
     autoDeploy: true
 
   # 2. Premium Frontend Site (Vite Static)
-  - type: static_site
+  - type: web
     name: cancer-ai-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
