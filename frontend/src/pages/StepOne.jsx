@@ -34,15 +34,17 @@ const StepOne = () => {
               {/* Full Name - Spans both columns for visual weight at top */}
               <div className="field-wrapper">
                 <label className="field-label">Full Name</label>
-                <input 
-                  type="text" 
-                  name="fullName" 
-                  placeholder="e.g. Johnathan Doe" 
-                  className="premium-input-box" 
-                  value={patientData.generalInfo.fullName} 
-                  onChange={handleChange} 
-                  required 
-                />
+                  <input 
+                    type="text" 
+                    name="fullName" 
+                    placeholder="e.g. Johnathan Doe" 
+                    className="premium-input-box" 
+                    value={patientData.generalInfo.fullName} 
+                    onChange={handleChange} 
+                    pattern="[A-Za-z\s]+"
+                    title="Full name should only contain letters and spaces"
+                    required 
+                  />
               </div>
 
               {/* Perfectly Symmetric Mid Grid */}
@@ -83,7 +85,7 @@ const StepOne = () => {
                   <input 
                     type="tel" 
                     name="contactNumber" 
-                    placeholder="+1 (555) 000-0000" 
+                    placeholder="+91 99999 99999" 
                     className="premium-input-box" 
                     value={patientData.generalInfo.contactNumber} 
                     onChange={handleChange} 

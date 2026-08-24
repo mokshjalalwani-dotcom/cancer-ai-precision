@@ -16,7 +16,7 @@ export const PatientProvider = ({ children }) => {
       fullName: '',
       age: '',
       gender: '',
-      contactNumber: '',
+      contactNumber: '+91 ',
       hospitalId: ''
     },
     clinicalData: {
@@ -48,7 +48,7 @@ export const PatientProvider = ({ children }) => {
 
   const resetData = () => {
     setPatientData({
-      generalInfo: { fullName: '', age: '', gender: '', contactNumber: '', hospitalId: '' },
+      generalInfo: { fullName: '', age: '', gender: '', contactNumber: '+91 ', hospitalId: '' },
       clinicalData: { tumorStage: '', tumorGrade: '', metastasis: 'No', geneA: '', geneB: '', geneC: '', reportFile: null }
     });
     setResults(null);
