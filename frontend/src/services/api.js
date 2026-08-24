@@ -15,6 +15,7 @@ if (API_BASE_URL && !API_BASE_URL.startsWith('http')) {
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,6 +30,7 @@ export const extractReport = (file) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    timeout: 90000,  // 90 seconds for large PDFs (5K genes = 19 pages)
   });
 };
 
