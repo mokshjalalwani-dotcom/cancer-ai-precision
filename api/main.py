@@ -6,6 +6,7 @@ import numpy as np
 import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 import pdfplumber
+import fitz  # PyMuPDF — 10-20x faster than pdfplumber for text extraction
 import io
 import re
 from typing import Any, List, Dict, Optional
@@ -497,11 +498,19 @@ async def extract_report(file: UploadFile = File(...)):
     content = await file.read()
     text = ""
     try:
-        with pdfplumber.open(io.BytesIO(content)) as pdf:
-            for page in pdf.pages:
-                text += page.extract_text() or ""
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error parsing PDF: {str(e)}")
+        # Use PyMuPDF (fitz) — 10-20x faster than pdfplumber for large gene PDFs
+        doc = fitz.open(stream=content, filetype="pdf")
+        for page in doc:
+            text += page.get_text()
+        doc.close()
+    except Exception:
+        # Fallback to pdfplumber if fitz fails
+        try:
+            with pdfplumber.open(io.BytesIO(content)) as pdf:
+                for page in pdf.pages:
+                    text += page.extract_text() or ""
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error parsing PDF: {str(e)}")
 
     # Extraction Logic (Regex)
     data: dict[str, Any] = {
