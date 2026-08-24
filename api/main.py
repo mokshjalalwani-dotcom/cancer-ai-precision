@@ -264,10 +264,21 @@ def predict_all(req: PatientRequest):
         surv_prob = survival_model.predict_proba(X_df)[0, 1]
         rec_prob = recurrence_model.predict_proba(X_df)[0, 1]
         
-        # Calculate prediction confidence (how far from 0.5 is the probability?)
-        # 100% confidence means prob is 0.0 or 1.0. 0% confidence means prob is exactly 0.5.
-        surv_conf = abs(surv_prob - 0.5) * 2 * 100
-        rec_conf = abs(rec_prob - 0.5) * 2 * 100
+        # Calculate confidence using Random Forest tree-voting agreement.
+        # Each of the 200 trees votes independently. If they all agree (low std),
+        # confidence is high. If trees are split (high std), confidence is low.
+        surv_tree_probs = np.array([tree.predict_proba(
+            survival_model.named_steps['preprocessor'].transform(X_df)
+        )[0, 1] for tree in survival_model.named_steps['classifier'].estimators_])
+        rec_tree_probs = np.array([tree.predict_proba(
+            recurrence_model.named_steps['preprocessor'].transform(X_df)
+        )[0, 1] for tree in recurrence_model.named_steps['classifier'].estimators_])
+
+        # std of 0.0 = all trees agree = 100% confidence
+        # std of 0.5 = maximum disagreement = 0% confidence
+        # Scale: confidence = (1 - std * 2) * 100, clipped to [0, 100]
+        surv_conf = float(np.clip((1.0 - surv_tree_probs.std() * 2) * 100, 0, 100))
+        rec_conf = float(np.clip((1.0 - rec_tree_probs.std() * 2) * 100, 0, 100))
         
         gene_data = req.genes or {}
         dominant_genes = sorted(
