@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ main ]
+    branches: [ master, main ]
 
 jobs:
   build-and-test:
@@ -34,7 +34,7 @@ jobs:
       run: docker build -t bc-prognosis:latest .
       
     - name: Push to Docker Hub (Production)
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
         echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
         docker tag bc-prognosis:latest ${{ secrets.DOCKER_USER }}/bc-prognosis:latest
