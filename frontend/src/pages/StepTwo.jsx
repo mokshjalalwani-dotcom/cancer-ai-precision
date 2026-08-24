@@ -18,7 +18,16 @@ const StepTwo = () => {
 
     setExtracting(true);
     setError(null);
-    updateClinicalData({ reportFile: file });
+    updateClinicalData({
+        reportFile: file,
+        tumorStage: '',
+        tumorGrade: '',
+        metastasis: 'No',
+        geneA: '',
+        geneB: '',
+        geneC: '',
+        extractedGenes: {}
+    });
 
     try {
       const response = await extractReport(file);
@@ -37,6 +46,7 @@ const StepTwo = () => {
     } catch (err) {
       console.error("Extraction Error:", err);
       setError("Failed to extract data from PDF. Please ensure it's a valid medical report.");
+      updateClinicalData({ reportFile: null });
     } finally {
       setExtracting(false);
     }
