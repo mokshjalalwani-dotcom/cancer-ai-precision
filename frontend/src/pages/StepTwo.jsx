@@ -74,7 +74,14 @@ const StepTwo = () => {
       setResults(response.data);
       navigate('/results', { state: { results: response.data } });
     } catch (err) {
-      setError("Analysis system is temporarily unavailable. Please ensure the backend server is running and check your network connection.");
+      console.error("Prediction Error:", err);
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError("Analysis timed out — the model is processing a large gene set. Please try again in a few seconds.");
+      } else if (err.response?.data?.detail) {
+        setError(`Analysis failed: ${err.response.data.detail}`);
+      } else {
+        setError("Analysis failed. Please check your network connection and try again.");
+      }
     } finally { setLoading(false); }
   };
 

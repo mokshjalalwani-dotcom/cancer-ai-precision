@@ -311,10 +311,6 @@ def predict_all(req: PatientRequest):
         print(f"ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-    except Exception as e:
-        print(f"ERROR: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/generate-report-pdf")
 async def generate_report_pdf(data: dict):
@@ -482,9 +478,6 @@ async def generate_report_pdf(data: dict):
         return StreamingResponse(buffer, media_type="application/pdf", headers={
             "Content-Disposition": f"attachment; filename=Prognosis_Report_{str(data.get('case_id', 'Unknown'))}.pdf"
         })
-    except Exception as e:
-        print(f"PDF GENERATION ERROR: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"PDF Generation failed: {str(e)}")
     except Exception as e:
         print(f"PDF GENERATION ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=f"PDF Generation failed: {str(e)}")

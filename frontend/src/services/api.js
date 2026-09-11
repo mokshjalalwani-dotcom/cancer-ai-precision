@@ -34,7 +34,7 @@ export const extractReport = (file) => {
   });
 };
 
-export const predictAll = (data) => api.post('/predict/all', data);
+export const predictAll = (data) => api.post('/predict/all', data, { timeout: 120000 }); // 2 min — ML inference on 5K genes is slow
 
 export const generateReportPDF = (data) => api.post('/generate-report-pdf', data, {
   responseType: 'blob'
